@@ -29,6 +29,8 @@ import java.util.Objects;
 /** Parameters controlling how {@link NexmarkGenerator} synthesizes {@link Event} elements. */
 public class GeneratorConfig implements Serializable {
 
+  private static final long serialVersionUID = 3526283620736646128L;
+
   /**
    * We start the ids at specific values to help ensure the queries find a match even on small
    * synthesized dataset sizes.
@@ -196,6 +198,10 @@ public class GeneratorConfig implements Serializable {
 
   public int getAvgPersonByteSize() {
     return configuration.avgPersonByteSize;
+  }
+
+  public boolean getCompressibleExtra() {
+    return configuration.compressibleExtra;
   }
 
   public int getNumActivePeople() {

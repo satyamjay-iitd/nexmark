@@ -28,6 +28,8 @@ import java.util.Objects;
 
 public class NexmarkConfiguration implements Serializable {
 
+	private static final long serialVersionUID = -8649935098961372907L;
+
 	/**
 	 * Number of events to generate. If zero, generate as many as possible without overflowing
 	 * internal counters etc.
@@ -92,6 +94,13 @@ public class NexmarkConfiguration implements Serializable {
 
 	/** Average idealized size of a 'new person' event, in bytes. */
 	@JsonProperty public int avgPersonByteSize = 200;
+
+	/**
+	 * When true (stock Nexmark), the 'extra' padding field reuses slices of a shared 1 MB string
+	 * (highly compressible). When false, padding is freshly random per record (incompressible),
+	 * so on-disk state size tracks the configured record size.
+	 */
+	@JsonProperty public boolean compressibleExtra = true;
 
 	/** Average idealized size of a 'new auction' event, in bytes. */
 	@JsonProperty public int avgAuctionByteSize = 500;

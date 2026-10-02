@@ -64,21 +64,25 @@ public class PersonGenerator {
     String state = nextUSState(random);
     int currentSize =
         8 + name.length() + email.length() + creditCard.length() + city.length() + state.length();
-    String extra = nextExtra(random, currentSize, config.getAvgPersonByteSize());
+    String extra = nextExtra(
+        random, currentSize, config.getAvgPersonByteSize(), config.getCompressibleExtra());
     return new Person(id, name, email, creditCard, city, state, Instant.ofEpochMilli(timestamp), extra);
   }
 
   /** Return a random person id (base 0). */
   public static long nextBase0PersonId(long eventId, SplittableRandom random, GeneratorConfig config) {
-    // Choose a random person from any of the 'active' people, plus a few 'leads'.
-    // By limiting to 'active' we ensure the density of bids or auctions per person
-    // does not decrease over time for long running jobs.
-    // By choosing a person id ahead of the last valid person id we will make
-    // newPerson and newAuction events appear to have been swapped in time.
-    long numPeople = lastBase0PersonId(config, eventId) + 1;
-    long activePeople = Math.min(numPeople, config.getNumActivePeople());
-    long n = LongGenerator.nextLong(random, activePeople + PERSON_ID_LEAD);
-    return numPeople - activePeople + n;
+    // EXPERIMENT: fixed active window.
+    // Draw the seller/bidder uniformly from the fixed prefix [0, numActivePeople), independent of
+    // how many persons have been generated so far. This pins the set of join keys to a stable
+    // prefix for the whole run and across savepoint restores, and it still works when person
+    // generation is disabled (personProportion = 0) in the measurement phase.
+    //
+    // Original upstream (sliding window) behaviour, kept for reference:
+    //   long numPeople = lastBase0PersonId(config, eventId) + 1;
+    //   long activePeople = Math.min(numPeople, config.getNumActivePeople());
+    //   long n = LongGenerator.nextLong(random, activePeople + PERSON_ID_LEAD);
+    //   return numPeople - activePeople + n;
+    return LongGenerator.nextLong(random, config.getNumActivePeople() + PERSON_ID_LEAD);
   }
 
   /**
