@@ -74,6 +74,7 @@ import java.time.Instant;
  *   --working-set 1000     Fixed number of active seller keys  = the working set
  *   --parallelism 1        Job parallelism (keep low so per-subtask cache/state ratio is meaningful)
  *   --phase build|measure  build = accumulate state; measure = frozen state, auctions only
+ *   --source-keep-alive true  Keep a bounded source running until a build savepoint is taken
  *   --hot-sellers-ratio 1  MUST be 1 so every seller goes through the fixed active window
  *   --person-proportion / --auction-proportion / --bid-proportion
  *   --person-avg-size 200  Bytes of padding per Person - inflate to grow per-key state
@@ -114,7 +115,9 @@ public class NexmarkQ3Job {
         NexmarkConfiguration nexmarkConf = new NexmarkConfiguration();
         nexmarkConf.numEvents          = numEvents;
         nexmarkConf.stopAtEvent        = -1L;
-        nexmarkConf.isSourceKeepAlive  = false;
+        // Keep a bounded build source running after it emits its requested events,
+        // so a savepoint can include every generated Person before the job exits.
+        nexmarkConf.isSourceKeepAlive  = params.getBoolean("source-keep-alive", false);
         int tps = params.getInt("tps", 0);
         if (tps > 0) {
             nexmarkConf.maxEmitSpeed = false;
